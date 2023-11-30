@@ -73,16 +73,7 @@ async function run() {
       next();
     };
 
-    // const verifySurveyor = async (req, res, next) => {
-    //   const email = req.decoded.email;
-    //   const query = { email: email };
-    //   const user = await usersCollection.findOne(query);
-    //   const isAdmin = user?.role === "admin";
-    //   if (!isAdmin) {
-    //     return res.status(403).send("You are not an admin!");
-    //   }
-    //   next();
-    // };
+   
 
     //Payment api
     app.post("/create-payment-intent", async (req, res) => {
@@ -97,7 +88,7 @@ async function run() {
         clientSecret: paymentIntent.client_secret,
       });
     });
-    app.get("/payments", async (req, res) => {
+    app.get("/payments",verifyToken, async (req, res) => {
         try {
             const result = await paymentCollection.find().toArray();
             res.send(result);
@@ -115,7 +106,7 @@ async function run() {
 
     //comment api
 
-    app.get("/comment", async (req, res) => {
+    app.get("/comment",verifyToken, async (req, res) => {
       const result = await commentCollection.find().toArray();
       res.send(result);
     });
@@ -129,7 +120,7 @@ async function run() {
 
     //Report api
 
-    app.get("/report", async (req, res) => {
+    app.get("/report", verifyToken, async (req, res) => {
       const result = await reportCollection.find().toArray();
       res.send(result);
     });
@@ -141,20 +132,20 @@ async function run() {
     });
 
     //Survey api
-    app.get("/survey", async (req, res) => {
+    app.get("/survey",  async (req, res) => {
       const result = await surveyCollection.find().toArray();
       res.send(result);
     });
 
     
-    app.get('/survey/update/:id', async (req, res) => {
+    app.get('/survey/update/:id', verifyToken, async (req, res) => {
         const id = req.params.id
         const query = { _id: new ObjectId(id) };
         const result = await surveyCollection.findOne(query)
         res.send(result);
     });
 
-    app.put('/survey/update/:id', async (req, res) => {
+    app.put('/survey/update/:id', verifyToken, async (req, res) => {
         const id = req.params.id;
         const filter = { _id: new ObjectId(id) }
         const options = { upsert: true };
@@ -174,7 +165,7 @@ async function run() {
         res.send(result);
     })
 
-    app.post("/survey", async (req, res) => {
+    app.post("/survey", verifyToken, async (req, res) => {
       const item = req.body;
       const timestamp = new Date();
       item.timestamp = timestamp;
@@ -182,7 +173,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/survey/:id", async (req, res) => {
+    app.get("/survey/:id",  async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await surveyCollection.findOne(query);
@@ -191,7 +182,7 @@ async function run() {
 
     //voting api
 
-    app.get("/vote", verifyToken, async (req, res) => {
+    app.get("/vote", async (req, res) => {
       const result = await voteCollection.find().toArray();
       res.send(result);
     });
@@ -304,27 +295,7 @@ async function run() {
       }
     });
 
-    //     const id = req.params.id;
-
-    //   const filter = { _id: new ObjectId(id) };
-    //   const updatedDoc = { $set: { role: "proUser" } };
-    //   const result = await usersCollection.updateOne(filter, updatedDoc);
-    //   res.send(result);
-    // });
-
-    // app.patch("/users/proUser/:id", verifyToken, async (req, res) => {
-    //   const id = req.params.id;
-    //   if (!ObjectId.isValid(id)) {
-    //     return res
-    //       .status(400)
-    //       .json({ success: false, message: "Invalid ObjectId" });
-    //   }
-
-    //   const filter = { _id: new ObjectId(id) };
-    //   const updatedDoc = { $set: { role: "proUser" } };
-    //   const result = await usersCollection.updateOne(filter, updatedDoc);
-    //   res.send(result);
-    // });
+  
     app.get("/user-role", verifyToken, async (req, res) => {
         const email = req.decoded.email;
       
@@ -352,10 +323,10 @@ async function run() {
       res.send(result);
     });
 
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
